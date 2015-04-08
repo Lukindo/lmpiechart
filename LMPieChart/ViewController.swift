@@ -8,8 +8,16 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController,LMPieChartDataSource {
 
+    @IBOutlet weak var chart: LMPieChart!{
+        didSet{
+            chart.dataSource = self
+        }
+    }
+    
+    let values = [1,2,3,4,0]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -18,6 +26,15 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    
+    func chart(chart: LMPieChart, valueForItemAtIndex index: Int) -> Double {
+        return Double(values[index])
+    }
+    
+    func numberOfItemsInPieChart(chart: LMPieChart) -> Int {
+        return values.count
     }
 
 
