@@ -20,7 +20,9 @@ import UIKit
 
 class LMPieChart: UIView {
     
-    weak var dataSource:LMPieChartDataSource?
+    
+    
+    @IBOutlet weak var dataSource:LMPieChartDataSource?
     
     let defaultColors = [UIColor.blueColor(),UIColor.redColor(),UIColor.orangeColor(),UIColor.greenColor()]
     
@@ -32,6 +34,34 @@ class LMPieChart: UIView {
         return min(bounds.size.width,bounds.size.height)/2*0.9
     }
     
+    var paths = [UIBezierPath]()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+    
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        setup()
+    }
+    
+    
+    private func setup(){
+        self.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "tap:"))
+    }
+    
+    func tap(gesture:UITapGestureRecognizer){
+        let position = gesture.locationInView(self)
+        println("Tap: \(position)")
+        
+        for i in 0..<paths.count{
+            if paths[i].containsPoint(position){
+                println("Tapped: \(i)")
+            }
+        }
+    }
+    
     override func drawRect(rect: CGRect) {
         
         let itemCount = dataSource?.numberOfItemsInPieChart(self) ?? 0
@@ -41,28 +71,27 @@ class LMPieChart: UIView {
         let itemSum = values.reduce(0){ $0 + ($1 ?? 0) }
         
         if itemCount != 0 && itemSum != 0{
-            println("Kreslim")
-            
+            paths.removeAll(keepCapacity: false)
             var angle = CGFloat(0)
             for i in 0..<itemCount{
                 if let val = values[i]{
                         println("\(i): \(val) \(val/itemSum)")
                     
-                        let itemArc = UIBezierPath(arcCenter: chartCenter, radius: chartRadius, startAngle: angle, endAngle: angle+CGFloat(2*M_PI*(val/itemSum)), clockwise: true)
-                        itemArc.lineWidth = CGFloat(3.0)
+                        var itemArc = UIBezierPath(arcCenter: chartCenter, radius: chartRadius, startAngle: angle, endAngle: angle+CGFloat(2*M_PI*(val/itemSum)), clockwise: true)
+                        itemArc.addLineToPoint(chartCenter)
+                        itemArc.closePath()
+                        paths.append(itemArc)
                     
                         let colorForArc = dataSource?.chart?(self, colorForItemAtIndex: i) ?? defaultColors[i % defaultColors.count]
                         colorForArc.set()
                     
-                        itemArc.stroke()
-                    
+                        itemArc.fill()
+                   
                         angle += CGFloat(2*M_PI*(val/itemSum))
                 }
             }
         }
-        else{
-            println("Nekreslim")
-        }
+    
 
     }
 
