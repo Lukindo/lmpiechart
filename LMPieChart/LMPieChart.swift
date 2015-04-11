@@ -18,11 +18,19 @@ import UIKit
     
 }
 
+@objc protocol LMPieChartDelegate: class{
+    optional func chart(chart: LMPieChart, didSelectItemAtIndex index: Int, withValue value: Double, andPercentage percent:Double)
+    optional func chartDidCancelSelection(chart: LMPieChart)
+
+}
+
 class LMPieChart: UIView {
     
     
     
     @IBOutlet weak var dataSource:LMPieChartDataSource?
+    
+    @IBOutlet weak var delegate:LMPieChartDelegate?
     
     let defaultColors = [UIColor.blueColor(),UIColor.redColor(),UIColor.orangeColor(),UIColor.greenColor()]
     
@@ -34,7 +42,11 @@ class LMPieChart: UIView {
         return min(bounds.size.width,bounds.size.height)/2*0.9
     }
     
-    var paths = [UIBezierPath]()
+    private var paths = [UIBezierPath]()
+    private var values = [Double]()
+    private var percentage = [Double]()
+    private var itemSum = 0.0
+    private var selected:Int?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -53,46 +65,61 @@ class LMPieChart: UIView {
     
     func tap(gesture:UITapGestureRecognizer){
         let position = gesture.locationInView(self)
-        println("Tap: \(position)")
-        
+        selected = nil
         for i in 0..<paths.count{
             if paths[i].containsPoint(position){
-                println("Tapped: \(i)")
+                selected = i
+                delegate?.chart?(self, didSelectItemAtIndex: i, withValue: values[i], andPercentage: percentage[i])
+                break
             }
+        }
+        self.setNeedsDisplay()
+        if selected == nil{
+            delegate?.chartDidCancelSelection?(self)
         }
     }
     
-    override func drawRect(rect: CGRect) {
+    override func drawRect(_: CGRect) {
         
         let itemCount = dataSource?.numberOfItemsInPieChart(self) ?? 0
         
-        let values = (0..<itemCount).map({self.dataSource?.chart(self, valueForItemAtIndex: $0)})
+        if let ds = dataSource {
         
-        let itemSum = values.reduce(0){ $0 + ($1 ?? 0) }
-        
-        if itemCount != 0 && itemSum != 0{
-            paths.removeAll(keepCapacity: false)
-            var angle = CGFloat(0)
-            for i in 0..<itemCount{
-                if let val = values[i]{
-                        println("\(i): \(val) \(val/itemSum)")
+            values = (0..<itemCount).map({ds.chart(self, valueForItemAtIndex: $0)})
+            
+            itemSum = values.reduce(0){ $0 + ($1 ?? 0) }
+            
+            if itemCount != 0 && itemSum != 0{
+                paths.removeAll(keepCapacity: false)
+                percentage.removeAll(keepCapacity: false)
+                percentage = values.map(){$0/self.itemSum}
+                
+                var angle = CGFloat(0)
+                for i in 0..<itemCount{
+                        
+                    var itemArc = UIBezierPath(arcCenter: chartCenter, radius: chartRadius, startAngle: angle, endAngle: angle+CGFloat(2*M_PI*(percentage[i])), clockwise: true)
+                    itemArc.addLineToPoint(chartCenter)
+                    itemArc.closePath()
+                    paths.append(itemArc)
+                
+                    let colorForArc = ds.chart?(self, colorForItemAtIndex: i) ?? defaultColors[i % defaultColors.count]
+                    colorForArc.set()
+                
+                    itemArc.fill()
                     
-                        var itemArc = UIBezierPath(arcCenter: chartCenter, radius: chartRadius, startAngle: angle, endAngle: angle+CGFloat(2*M_PI*(val/itemSum)), clockwise: true)
-                        itemArc.addLineToPoint(chartCenter)
-                        itemArc.closePath()
-                        paths.append(itemArc)
-                    
-                        let colorForArc = dataSource?.chart?(self, colorForItemAtIndex: i) ?? defaultColors[i % defaultColors.count]
-                        colorForArc.set()
-                    
-                        itemArc.fill()
-                   
-                        angle += CGFloat(2*M_PI*(val/itemSum))
+                    angle += CGFloat(2*M_PI*(percentage[i]))
                 }
+                
+                if let sel = selected{
+                    let selectedItem = paths[sel]
+                    selectedItem.lineWidth = 3.0
+                    UIColor.blackColor().setStroke()
+                    selectedItem.stroke()
+                }
+                
             }
+        
         }
-    
-
     }
 
 }

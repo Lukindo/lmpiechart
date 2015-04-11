@@ -8,11 +8,12 @@
 
 import UIKit
 
-class ViewController: UIViewController,LMPieChartDataSource {
+class ViewController: UIViewController,LMPieChartDataSource, LMPieChartDelegate {
 
     @IBOutlet weak var chart: LMPieChart!{
         didSet{
             chart.dataSource = self
+            chart.delegate = self
         }
     }
     
@@ -35,6 +36,9 @@ class ViewController: UIViewController,LMPieChartDataSource {
     
     func numberOfItemsInPieChart(chart: LMPieChart) -> Int {
         return values.count
+    }
+    func chart(chart: LMPieChart, didSelectItemAtIndex index: Int, withValue value: Double, andPercentage percent: Double) {
+        println("Selected index: \(index), value: \(value), percentage: \(percent) ")
     }
 
 
