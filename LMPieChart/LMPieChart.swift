@@ -32,7 +32,14 @@ class LMPieChart: UIView {
     
     @IBOutlet weak var delegate:LMPieChartDelegate?
     
-    let defaultColors = [UIColor.blueColor(),UIColor.redColor(),UIColor.orangeColor(),UIColor.greenColor()]
+    let defaultColors = [UIColor(red: CGFloat(90/255.0), green: CGFloat(200/255.0), blue: CGFloat(250/255.0), alpha: CGFloat(1.0)),
+        UIColor(red: CGFloat(255/255.0), green: CGFloat(204/255.0), blue: CGFloat(0), alpha: CGFloat(1.0)),
+        UIColor(red: CGFloat(1.0), green: CGFloat(149/255.0), blue: CGFloat(0), alpha: CGFloat(1.0)),
+        UIColor(red: CGFloat(1.0), green: CGFloat(45/255.0), blue: CGFloat(85/255.0), alpha: CGFloat(1.0)),
+        UIColor(red: CGFloat(0), green: CGFloat(122/255.0), blue: CGFloat(1), alpha: CGFloat(1)),
+        UIColor(red: CGFloat(76/255.0), green: CGFloat(217/255.0), blue: CGFloat(100/255.0), alpha: CGFloat(1)),
+        UIColor(red: CGFloat(1), green: CGFloat(59/255.0), blue: CGFloat(48/255.0), alpha: CGFloat(1)),
+        UIColor(red: CGFloat(142/255.0), green: CGFloat(142/255.0), blue: CGFloat(147/255.0), alpha: CGFloat(1))]
     
     var chartCenter:CGPoint{
         return convertPoint(center, fromView:superview)
@@ -96,7 +103,7 @@ class LMPieChart: UIView {
                 
                 var angle = CGFloat(0)
                 for i in 0..<itemCount{
-                        
+                    
                     var itemArc = UIBezierPath(arcCenter: chartCenter, radius: chartRadius, startAngle: angle, endAngle: angle+CGFloat(2*M_PI*(percentage[i])), clockwise: true)
                     itemArc.addLineToPoint(chartCenter)
                     itemArc.closePath()
@@ -112,7 +119,7 @@ class LMPieChart: UIView {
                 
                 if let sel = selected{
                     let selectedItem = paths[sel]
-                    selectedItem.lineWidth = 3.0
+                    selectedItem.lineWidth = 2.0
                     UIColor.blackColor().setStroke()
                     selectedItem.stroke()
                 }
