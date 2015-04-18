@@ -30,6 +30,9 @@ class ViewController: UIViewController,LMPieChartDataSource, LMPieChartDelegate 
     }
     
     
+    @IBAction func cancelSelection() {
+        self.chart.cancelSelection();
+    }
     func chart(chart: LMPieChart, valueForItemAtIndex index: Int) -> Double {
         return Double(values[index])
     }

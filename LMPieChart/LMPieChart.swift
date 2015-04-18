@@ -53,7 +53,7 @@ class LMPieChart: UIView {
     private var values = [Double]()
     private var percentage = [Double]()
     private var itemSum = 0.0
-    private var selected:Int?
+    private var selectedIndex:Int?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -70,18 +70,23 @@ class LMPieChart: UIView {
         self.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "tap:"))
     }
     
+    func cancelSelection(){
+        selectedIndex = nil
+        self.setNeedsDisplay()
+    }
+    
     func tap(gesture:UITapGestureRecognizer){
         let position = gesture.locationInView(self)
-        selected = nil
+        selectedIndex = nil
         for i in 0..<paths.count{
             if paths[i].containsPoint(position){
-                selected = i
+                selectedIndex = i
                 delegate?.chart?(self, didSelectItemAtIndex: i, withValue: values[i], andPercentage: percentage[i])
                 break
             }
         }
         self.setNeedsDisplay()
-        if selected == nil{
+        if selectedIndex == nil{
             delegate?.chartDidCancelSelection?(self)
         }
     }
@@ -117,7 +122,7 @@ class LMPieChart: UIView {
                     angle += CGFloat(2*M_PI*(percentage[i]))
                 }
                 
-                if let sel = selected{
+                if let sel = selectedIndex{
                     let selectedItem = paths[sel]
                     selectedItem.lineWidth = 2.0
                     UIColor.blackColor().setStroke()
